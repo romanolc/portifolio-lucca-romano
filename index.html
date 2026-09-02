@@ -10,8 +10,29 @@
 </head>
 <body>
 
+<!-- ══════════ SYSTEM BOOT ══════════ -->
+<div class="boot-screen" id="bootScreen" aria-hidden="true">
+  <div class="boot-half boot-half-l">
+    <div class="boot-inner">
+      <div class="boot-logo">LUCCA ROMANO</div>
+      <div class="boot-sub">DIGITAL PORTFOLIO</div>
+    </div>
+  </div>
+  <div class="boot-half boot-half-r">
+    <div class="boot-inner">
+      <div class="boot-log" id="bootLog"></div>
+      <div class="boot-status"><span id="bootStatusText">INITIALIZING</span><span class="boot-pct" id="bootPct">0%</span></div>
+      <div class="boot-bar"><span id="bootBarFill"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NEURAL BACKGROUND ══════════ -->
+<canvas id="neuralCanvas" class="neural-canvas" aria-hidden="true"></canvas>
+
 <!-- ══════════ CURSOR ══════════ -->
 <div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 <div class="cursor-trail" id="cursorTrail"></div>
 
 <!-- ══════════ LANGUAGE TOGGLE ══════════ -->
@@ -53,6 +74,10 @@
 <!-- ══════════ HOME ══════════ -->
 <section id="home" class="section home-section">
   <div class="home-bg-grid"></div>
+  <div class="home-deco" aria-hidden="true">
+    <span class="home-deco-line"></span>
+    <span class="home-deco-tag">LR // DEV.2026</span>
+  </div>
   <div class="home-content">
     <div class="profile-photo-wrap reveal">
       <div class="profile-photo-ring"></div>
@@ -65,7 +90,11 @@
       <h2 class="home-title reveal"><span class="typed-text" id="typedText"></span><span class="cursor-blink">|</span></h2>
       <div class="home-actions reveal">
         <a href="#projects" class="btn btn-primary" onclick="smoothScroll('projects')" data-i18n="btn_see_content">Ver conteúdo</a>
-        <a href="curriculo.pdf" download class="btn btn-outline" data-i18n="btn_download_cv">Baixar currículo</a>
+        <a href="curriculo.pdf" download="Curriculo_Lucca_Romano.pdf" class="btn btn-outline" data-i18n="btn_download_cv">Baixar currículo</a>
+        <a href="curriculo.pdf" target="_blank" rel="noopener" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span data-i18n="btn_view_cv">Visualizar currículo</span>
+        </a>
       </div>
       <div class="home-socials reveal">
         <a href="https://www.linkedin.com/in/lucca-romano-686763357" target="_blank" class="social-link">

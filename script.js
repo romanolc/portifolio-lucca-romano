@@ -16,6 +16,7 @@ const translations = {
     home_greeting: 'Olá, eu sou',
     btn_see_content:   'Ver conteúdo',
     btn_download_cv:   'Baixar currículo',
+    btn_view_cv:       'Visualizar currículo',
     scroll_down: 'scroll',
     about_label: '01 — Sobre mim',
     about_title: 'Quem sou eu',
@@ -101,6 +102,7 @@ const translations = {
     home_greeting: 'Hello, I am',
     btn_see_content:   'See my work',
     btn_download_cv:   'Download resume',
+    btn_view_cv:       'View resume',
     scroll_down: 'scroll',
     about_label: '01 — About me',
     about_title: 'Who I am',
@@ -308,28 +310,190 @@ function initParallax() {
   }, { passive: true });
 }
 
-/* ── Custom cursor ── */
+/* ── Custom cursor (with magnetic + trail) ── */
 function initCursor() {
   if (prefersReducedMotion) return;
+  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
   const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
   const trail  = document.getElementById('cursorTrail');
-  if (!cursor || !trail) return;
+  if (!cursor || !ring || !trail) return;
 
   let mx = 0, my = 0;
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
     cursor.style.left = mx + 'px';
     cursor.style.top  = my + 'px';
+    ring.style.left = mx + 'px';
+    ring.style.top  = my + 'px';
   });
 
   setInterval(() => {
     trail.style.left = mx + 'px';
     trail.style.top  = my + 'px';
-  }, 60);
+  }, 90);
 
-  document.querySelectorAll('a, button, .card, .skill-tag').forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.style.transform = 'translate(-50%,-50%) scale(2)');
-    el.addEventListener('mouseleave', () => cursor.style.transform = 'translate(-50%,-50%) scale(1)');
+  document.querySelectorAll('a, button, .card, .skill-tag, input, textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('magnetic'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('magnetic'));
+  });
+
+  document.addEventListener('mouseleave', () => {
+    cursor.classList.add('hidden'); ring.classList.add('hidden'); trail.classList.add('hidden');
+  });
+  document.addEventListener('mouseenter', () => {
+    cursor.classList.remove('hidden'); ring.classList.remove('hidden'); trail.classList.remove('hidden');
+  });
+}
+
+/* ── Animated stat counters ── */
+function initStatCounters() {
+  const stats = document.querySelectorAll('.stat-num[data-target]');
+  if (!stats.length) return;
+  const suffix = el => (el.textContent.match(/[^\d]+$/) || [''])[0];
+
+  const animate = (el) => {
+    const target = parseInt(el.getAttribute('data-target'), 10) || 0;
+    const suf = suffix(el);
+    if (prefersReducedMotion) { el.textContent = target + suf; return; }
+    const duration = 1100;
+    const start = performance.now();
+    function step(now) {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target) + suf;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animate(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.6 });
+
+  stats.forEach(s => observer.observe(s));
+}
+
+/* ── Neural network canvas background ── */
+function initNeuralCanvas() {
+  const canvas = document.getElementById('neuralCanvas');
+  if (!canvas) return;
+  if (prefersReducedMotion) { canvas.remove(); return; }
+
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr;
+  let nodes = [];
+  let mouse = { x: null, y: null, active: false };
+  let rafId = null;
+
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  const DENSITY = isMobile ? 22000 : 11000; // px² per node
+  const LINK_DIST = isMobile ? 110 : 150;
+  const MOUSE_RADIUS = 160;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.max(24, Math.min(90, Math.round((w * h) / DENSITY)));
+    nodes = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: (Math.random() - 0.5) * 0.22,
+      r: Math.random() * 1.4 + 0.6,
+    }));
+  }
+
+  function step() {
+    ctx.clearRect(0, 0, w, h);
+
+    // update + draw nodes
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > w) n.vx *= -1;
+      if (n.y < 0 || n.y > h) n.vy *= -1;
+
+      if (mouse.active) {
+        const dx = n.x - mouse.x, dy = n.y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < MOUSE_RADIUS) {
+          const force = (1 - dist / MOUSE_RADIUS) * 0.045;
+          n.x += (dx / (dist || 1)) * force * 12;
+          n.y += (dy / (dist || 1)) * force * 12;
+        }
+      }
+    });
+
+    // links
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < LINK_DIST) {
+          const alpha = (1 - dist / LINK_DIST) * 0.35;
+          ctx.strokeStyle = `rgba(96,165,250,${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+      if (mouse.active) {
+        const dx = nodes[i].x - mouse.x, dy = nodes[i].y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < MOUSE_RADIUS) {
+          const alpha = (1 - dist / MOUSE_RADIUS) * 0.5;
+          ctx.strokeStyle = `rgba(96,165,250,${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // nodes on top
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(147,197,253,0.55)';
+      ctx.fill();
+    });
+
+    rafId = requestAnimationFrame(step);
+  }
+
+  resize();
+  step();
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 200);
+  });
+
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
+  }, { passive: true });
+  window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { cancelAnimationFrame(rafId); }
+    else { rafId = requestAnimationFrame(step); }
   });
 }
 
@@ -366,12 +530,260 @@ function initScrollSpy() {
   sections.forEach(s => observer.observe(s));
 }
 
+/* ── System boot screen ── */
+function initBootScreen() {
+  const boot = document.getElementById('bootScreen');
+  if (!boot) return;
+  if (prefersReducedMotion) { boot.remove(); return; }
+
+  document.body.classList.add('boot-lock');
+  const logEl    = document.getElementById('bootLog');
+  const statusText = document.getElementById('bootStatusText');
+  const pctEl    = document.getElementById('bootPct');
+  const barFill  = document.getElementById('bootBarFill');
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  const fillTime = isMobile ? 650 : 1100;
+  const lines = isMobile
+    ? ['booting kernel...', 'compiling interface...']
+    : ['booting kernel...', 'loading assets...', 'linking modules...', 'compiling interface...'];
+
+  const hardTimeout = setTimeout(() => {
+    document.body.classList.remove('boot-lock');
+    if (boot && boot.parentNode) boot.remove();
+  }, 4500);
+
+  try {
+    lines.forEach((l, i) => {
+      setTimeout(() => {
+        if (!logEl) return;
+        const d = document.createElement('div');
+        d.innerHTML = `<span>&gt;</span> ${l}`;
+        logEl.appendChild(d);
+      }, i * (isMobile ? 140 : 190));
+    });
+
+    const lineTime = lines.length * (isMobile ? 140 : 190) + 100;
+
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        barFill.style.transition = `width ${fillTime}ms ease`;
+        barFill.style.width = '100%';
+      });
+      const start = performance.now();
+      (function tick(now) {
+        const p = Math.min(1, (now - start) / fillTime);
+        if (pctEl) pctEl.textContent = Math.round(p * 100) + '%';
+        if (p < 1) requestAnimationFrame(tick);
+      })(start);
+    }, lineTime);
+
+    setTimeout(() => {
+      if (statusText) statusText.textContent = 'SYSTEM READY';
+      if (pctEl) pctEl.textContent = '100%';
+      setTimeout(() => {
+        boot.classList.add('boot-open');
+        document.body.classList.remove('boot-lock');
+        setTimeout(() => {
+          clearTimeout(hardTimeout);
+          if (boot.parentNode) boot.remove();
+        }, 750);
+      }, isMobile ? 220 : 380);
+    }, lineTime + fillTime + 150);
+  } catch (e) {
+    document.body.classList.remove('boot-lock');
+    if (boot.parentNode) boot.remove();
+  }
+}
+
+/* ── Tech background decoration (per-section, discrete) ── */
+function initTechDecor() {
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+
+  const configs = {
+    about: {
+      frags: [
+        { t: 'const{}', top: '10%', left: '4%' },
+        { t: '=>', top: '22%', right: '6%' },
+        { t: '01', bottom: '30%', left: '2%', muted: true },
+        { t: '<dev/>', bottom: '12%', right: '8%' },
+        { t: '0101', top: '48%', right: '2%', muted: true },
+        { t: 'npm install', top: '32%', left: '1%', muted: true },
+        { t: 'return true;', bottom: '42%', right: '1%' },
+      ],
+      tags: [
+        { t: '[ SYS_01 ]', top: '6%', right: '3%' },
+        { t: 'STATUS: ACTIVE', bottom: '8%', left: '3%', online: true },
+      ],
+      icons: [
+        { t: '{ }', top: '15%', right: '1%', size: '2.4rem' },
+        { t: '</>', bottom: '20%', left: '0%', size: '2rem' },
+      ],
+      nodes: [{ top: '65%', left: '6%' }],
+      code: [{
+        top: '78%', left: '2%',
+        lines: [
+          [['const ', 'kw'], ['dev', ''], [' = {', 'pun']],
+          [['  stack', ''], [': ', 'pun'], ['["JS","TS"]', 'str']],
+          [['}', 'pun']],
+        ],
+      }],
+    },
+    events: {
+      frags: [
+        { t: 'npm run build', top: '8%', right: '4%' },
+        { t: '01', top: '35%', left: '2%', muted: true },
+        { t: 'git commit', bottom: '20%', right: '3%' },
+        { t: '0101', bottom: '6%', left: '4%', muted: true },
+        { t: 'git push origin', top: '55%', right: '1%', muted: true },
+        { t: '10', top: '15%', left: '1%' },
+      ],
+      tags: [
+        { t: '01 / 12', top: '5%', left: '3%' },
+        { t: '● ONLINE', bottom: '10%', right: '4%', online: true },
+      ],
+      icons: [
+        { t: 'git', top: '42%', left: '0%', size: '1.6rem' },
+        { t: '=>', bottom: '30%', right: '0%', size: '2.2rem' },
+      ],
+      nodes: [{ top: '50%', right: '3%' }, { top: '80%', left: '2%' }],
+    },
+    projects: {
+      frags: [
+        { t: 'function()', top: '9%', left: '3%' },
+        { t: 'import', top: '40%', right: '2%', muted: true },
+        { t: 'return', bottom: '22%', left: '5%' },
+        { t: 'TS', bottom: '8%', right: '6%', muted: true },
+        { t: 'export default', top: '60%', left: '1%', muted: true },
+        { t: '0101', top: '20%', right: '1%' },
+      ],
+      tags: [
+        { t: '[ SYS_03 ]', top: '6%', right: '3%' },
+        { t: 'COORD: 12.94° S', bottom: '6%', left: '3%' },
+      ],
+      icons: [
+        { t: 'JS', top: '28%', left: '0%', size: '1.6rem' },
+        { t: '{ }', bottom: '35%', right: '0%', size: '2.4rem' },
+      ],
+      nodes: [{ top: '58%', left: '4%' }, { top: '15%', right: '2%' }],
+      code: [{
+        top: '75%', right: '2%',
+        lines: [
+          [['function ', 'kw'], ['build', ''], ['() {', 'pun']],
+          [['  return ', 'kw'], ['"ready"', 'str']],
+          [['}', 'pun']],
+        ],
+      }],
+    },
+    contact: {
+      frags: [
+        { t: '> send(message)', top: '10%', right: '4%' },
+        { t: '01', top: '38%', left: '3%', muted: true },
+        { t: '10', bottom: '28%', right: '3%', muted: true },
+        { t: 'await response', top: '58%', left: '1%', muted: true },
+      ],
+      tags: [
+        { t: 'STATUS: ONLINE', top: '6%', left: '3%', online: true },
+        { t: 'CONNECTION_ESTABLISHED', bottom: '8%', right: '3%' },
+      ],
+      icons: [
+        { t: '=>', top: '25%', right: '0%', size: '2.2rem' },
+        { t: '</>', bottom: '18%', left: '0%', size: '2rem' },
+      ],
+      nodes: [{ top: '55%', right: '4%' }],
+    },
+  };
+
+  const nodesSVG = (id) => `
+    <svg class="tech-nodes" width="70" height="46" viewBox="0 0 70 46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" id="${id}">
+      <line x1="8" y1="10" x2="30" y2="6" stroke="rgba(96,165,250,.35)" stroke-width="1"/>
+      <line x1="30" y1="6" x2="52" y2="16" stroke="rgba(96,165,250,.35)" stroke-width="1"/>
+      <line x1="30" y1="6" x2="20" y2="34" stroke="rgba(96,165,250,.25)" stroke-width="1"/>
+      <line x1="52" y1="16" x2="60" y2="38" stroke="rgba(96,165,250,.25)" stroke-width="1"/>
+      <circle cx="8" cy="10" r="2" fill="#93c5fd"/>
+      <circle cx="30" cy="6" r="2.2" fill="#93c5fd"/>
+      <circle cx="52" cy="16" r="2" fill="#93c5fd"/>
+      <circle cx="20" cy="34" r="1.8" fill="#93c5fd"/>
+      <circle cx="60" cy="38" r="1.8" fill="#93c5fd"/>
+    </svg>`;
+
+  const posStr = (o) => ['top', 'right', 'bottom', 'left'].map(k => o[k] ? `${k}:${o[k]};` : '').join('');
+
+  Object.keys(configs).forEach(id => {
+    const section = document.getElementById(id);
+    if (!section) return;
+    const cfg = configs[id];
+    const layer = document.createElement('div');
+    layer.className = 'tech-decor';
+    layer.setAttribute('aria-hidden', 'true');
+
+    let html = '';
+    html += `<div class="tech-corner tl"></div><div class="tech-corner tr"></div><div class="tech-corner bl"></div><div class="tech-corner br"></div>`;
+    html += `<div class="tech-scan"></div>`;
+
+    cfg.frags.forEach((f, i) => {
+      html += `<span class="tech-frag${f.muted ? ' muted' : ''}" style="${posStr(f)}animation-delay:${(i * 1.3).toFixed(1)}s;">${f.t}</span>`;
+    });
+    cfg.tags.forEach((tg, i) => {
+      html += `<span class="tech-tag${tg.online ? ' online' : ''}" style="${posStr(tg)}animation-delay:${(i * 1.8).toFixed(1)}s;">${tg.t}</span>`;
+    });
+    (cfg.icons || []).forEach((ic, i) => {
+      html += `<span class="tech-icon" style="${posStr(ic)}font-size:${ic.size || '2rem'};animation-delay:${(i * 2.1).toFixed(1)}s;">${ic.t}</span>`;
+    });
+
+    layer.innerHTML = html;
+
+    if (!isMobile) {
+      cfg.nodes.forEach((n) => {
+        const holder = document.createElement('span');
+        holder.style.cssText = posStr(n);
+        holder.innerHTML = nodesSVG('');
+        layer.appendChild(holder);
+      });
+      (cfg.code || []).forEach((block) => {
+        const holder = document.createElement('div');
+        holder.className = 'tech-code';
+        holder.style.cssText = posStr(block);
+        holder.innerHTML = block.lines.map(line =>
+          line.map(([txt, cls]) => cls ? `<span class="${cls}">${txt}</span>` : txt).join('')
+        ).join('\n');
+        layer.appendChild(holder);
+      });
+    }
+
+    section.insertBefore(layer, section.firstChild);
+  });
+}
+
+/* ── Subtle mouse parallax on tech-decor layers (desktop only) ── */
+function initTechParallax() {
+  if (prefersReducedMotion) return;
+  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
+
+  let mx = 0, my = 0, raf = null;
+  const apply = () => {
+    document.querySelectorAll('.tech-decor').forEach(layer => {
+      layer.style.transform = `translate(${mx}px, ${my}px)`;
+    });
+    raf = null;
+  };
+  window.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth - 0.5) * 10;
+    my = (e.clientY / window.innerHeight - 0.5) * 6;
+    if (!raf) raf = requestAnimationFrame(apply);
+  }, { passive: true });
+}
+
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
+  initBootScreen();
   initReveal();
   initCursor();
   initScrollSpy();
   initParallax();
+  initStatCounters();
+  initNeuralCanvas();
+  initTechDecor();
+  initTechParallax();
   startTyping();
   // Apply initial language
   setLang('pt');
