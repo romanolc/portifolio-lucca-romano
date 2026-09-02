@@ -35,6 +35,28 @@ body {
   font-weight: 300;
   line-height: 1.65;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* ── Global tech background layer (dots + drifting glow) ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background-image: radial-gradient(rgba(96,165,250,.14) 1px, transparent 1px);
+  background-size: 34px 34px;
+  opacity: .5;
+}
+body::after {
+  content: '';
+  position: fixed; inset: -10%; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(38% 28% at 12% 18%, rgba(37,99,235,.10), transparent 70%),
+    radial-gradient(32% 26% at 88% 78%, rgba(96,165,250,.08), transparent 70%);
+  animation: bgDrift 26s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  0%   { transform: translate(0,0) scale(1); }
+  100% { transform: translate(-2%, 2%) scale(1.05); }
 }
 
 img { display: block; width: 100%; }
@@ -370,6 +392,35 @@ ul { list-style: none; }
 .badge-silver{ color: #94a3b8; border-color: rgba(148,163,184,.4); }
 .badge-bronze{ color: #cd7c4a; border-color: rgba(205,124,74,.4); }
 .badge-top10 { color: var(--blue-l); border-color: var(--border); }
+.badge-recognition { color: #c084fc; border-color: rgba(192,132,252,.4); }
+
+/* ── Featured event card (GrandPrix Nacional) ── */
+.card-featured {
+  grid-column: span 2;
+  border-color: rgba(245,158,11,.35);
+  box-shadow: 0 0 0 1px rgba(245,158,11,.08), 0 20px 60px rgba(245,158,11,.10);
+}
+.card-featured:hover {
+  border-color: rgba(245,158,11,.6);
+  box-shadow: 0 20px 60px rgba(245,158,11,.22);
+}
+.card-featured .card-img-wrap { height: 260px; }
+.card-highlight {
+  display: inline-block; margin-bottom: 10px;
+  font-family: 'Syne', sans-serif; font-size: .75rem; font-weight: 700;
+  letter-spacing: .03em; color: #f59e0b;
+  background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3);
+  border-radius: 100px; padding: 4px 12px;
+}
+
+/* ── Recognition card (Aluno Destaque CIMATEC) ── */
+.recognition-img-wrap {
+  aspect-ratio: 900 / 649; height: auto;
+  background: var(--bg3);
+}
+.recognition-img-wrap img { object-fit: cover; object-position: center; }
+.recognition-card { border-color: rgba(192,132,252,.25); }
+.recognition-card:hover { border-color: rgba(192,132,252,.45); box-shadow: 0 20px 60px rgba(192,132,252,.14); }
 
 .card-body { padding: 24px; }
 .card-body h3 {
@@ -438,6 +489,18 @@ ul { list-style: none; }
 }
 .footer-copy { font-size: .78rem; color: rgba(136,153,187,.4); margin-top: 14px; }
 
+/* ════════ ACCESSIBILITY ════════ */
+a:focus-visible, button:focus-visible, .lang-btn:focus-visible,
+.form-group input:focus-visible, .form-group textarea:focus-visible {
+  outline: 2px solid var(--blue-l); outline-offset: 3px; border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; }
+  .profile-photo-ring { animation: none; }
+}
+
 /* ════════ REVEAL ANIMATIONS ════════ */
 .reveal {
   opacity: 0; transform: translateY(32px);
@@ -453,6 +516,8 @@ ul { list-style: none; }
 @keyframes fadeInUp { from{ opacity:0; transform:translateY(20px); } to{ opacity:.6; transform:translateY(0); } }
 
 /* ════════ RESPONSIVE ════════ */
+img { max-width: 100%; }
+
 @media (max-width: 900px) {
   .home-content   { flex-direction: column; text-align: center; gap: 36px; padding-top: 100px; }
   .home-socials   { justify-content: center; }
@@ -461,13 +526,54 @@ ul { list-style: none; }
   .profile-photo        { width: 160px; height: 160px; }
   .about-grid     { grid-template-columns: 1fr; gap: 40px; }
   .contact-wrap   { grid-template-columns: 1fr; gap: 40px; }
+  .card-featured  { grid-column: span 1; }
+  .card-featured .card-img-wrap { height: 220px; }
 }
 
 @media (max-width: 600px) {
-  .section { padding: 100px 0 60px; }
+  .section { padding: 96px 0 56px; }
   .container { padding: 0 20px; }
-  .cards-grid { grid-template-columns: 1fr; }
-  .about-stats { gap: 20px; }
+  .cards-grid { grid-template-columns: 1fr; gap: 18px; }
+  .about-stats { gap: 20px; flex-wrap: wrap; }
   .home-actions { flex-direction: column; width: 100%; }
   .btn { justify-content: center; }
+  .section-header { margin-bottom: 44px; }
+  .lang-toggle { top: 14px; right: 16px; padding: 5px 10px; }
+  .hamburger { top: 14px; left: 16px; width: 38px; height: 38px; }
+  .card-img-wrap { height: 190px; }
+  .card-body { padding: 20px; }
+  .footer { padding: 36px 20px; }
+}
+
+@media (max-width: 480px) {
+  .home-content { padding-top: 92px; gap: 28px; }
+  .profile-photo-wrap { width: 128px; height: 128px; }
+  .profile-photo { width: 128px; height: 128px; }
+  .home-name { font-size: clamp(2.1rem, 9vw, 2.6rem); }
+  .home-title { font-size: clamp(1rem, 4.5vw, 1.2rem); margin-bottom: 28px; }
+  .home-greeting { font-size: .78rem; }
+  .section-title { font-size: clamp(1.7rem, 7vw, 2.2rem); }
+  .about-stats { gap: 16px 24px; }
+  .stat-num { font-size: 1.8rem; }
+  .btn { padding: 12px 22px; font-size: .82rem; }
+  .skills-grid { gap: 6px; }
+  .skill-tag { padding: 5px 11px; font-size: .75rem; }
+  .sidenav { width: min(var(--nav-w), 82vw); padding: 72px 22px 24px; }
+}
+
+@media (max-width: 375px) {
+  .container { padding: 0 16px; }
+  .home-content { padding: 0 16px; padding-top: 88px; }
+  .card-body { padding: 16px; }
+  .card-img-wrap { height: 168px; }
+  .about-stats { justify-content: center; }
+  .lang-toggle { padding: 4px 8px; }
+  .lang-btn { font-size: .72rem; }
+}
+
+@media (max-width: 340px) {
+  .home-name { font-size: 1.9rem; }
+  .section-title { font-size: 1.5rem; }
+  .btn { width: 100%; }
+  .home-actions { width: 100%; }
 }

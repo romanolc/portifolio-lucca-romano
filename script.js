@@ -38,6 +38,19 @@ const translations = {
     badge_silver: '🥈 2° Lugar',
     badge_2nd:    '🥈 2° Lugar',
     badge_ambassador: 'Embaixador',
+    badge_1st_natl: '🥇 1° Lugar Nacional',
+    badge_2nd2: '🥈 2° Lugar',
+    badge_3rd4: '🥉 3° Lugar',
+    badge_recognition: '🏅 Reconhecimento',
+    ev9_highlight: '🏆 +27 mil participantes de todo o Brasil',
+    ev9_title: 'GrandPrix Nacional',
+    ev9_desc: 'Conquistamos o 1º lugar no GrandPrix Nacional, competição que reuniu mais de 27 mil participantes de todos os estados do Brasil. Uma das maiores conquistas da equipe CtrlSec até hoje, resultado de meses de dedicação em ideação, desenvolvimento e apresentação da solução.',
+    ev10_title: 'Ideias Raras — São Paulo',
+    ev10_desc: 'Conquistei o 2º lugar no Hackathon Ideias Raras, em São Paulo, um dos grandes hubs de inovação do país, com foco em soluções para encontrar o paciente raro no SUS. Um pódio que reforça nosso compromisso em usar tecnologia para acelerar o diagnóstico de doenças raras.',
+    ev11_title: 'Hackathon + Mineração',
+    ev11_desc: 'Conquistei o 3º lugar no Hackathon + Mineração, promovido pela CBPM e MinexHub, desenvolvendo uma solução voltada aos desafios do setor mineral. Mais uma competição que mostra a versatilidade da equipe em propor tecnologia para diferentes setores da economia.',
+    ev12_title: 'Aluno Destaque CIMATEC — 2026',
+    ev12_desc: 'Recebi o reconhecimento de Aluno Destaque CIMATEC 2026, concedido durante um evento institucional do SENAI CIMATEC pela participação ativa em iniciativas de inovação, tecnologia e empreendedorismo.',
     ev1_title: 'Hackathon Harvard HSIL',
     ev1_desc:  'Participei do Hackathon Harvard HSIL, em São Paulo, focado em inovação em saúde. Desenvolvemos o CapCure, uma solução que transforma o monitoramento neurológico infantil em um jogo interativo, utilizando IA e estímulos sensoriais do celular para analisar respostas da criança. A proposta é realizar esse acompanhamento de forma natural e não invasiva, sem necessidade de ambiente hospitalar.',
     ev2_title: 'NASA Space Apps',
@@ -63,6 +76,9 @@ const translations = {
     proj5_desc: 'Dashboard de gestão de energia com IA preditiva, Digital Twin e monitoramento em tempo real para indústrias e empresas.',
     proj6_desc: 'Sistema de segurança com óculos inteligentes, autenticação Zero Trust e AES-256, com assistente IA integrado para acesso seguro.',
     proj7_desc: 'Solução que transforma o monitoramento neurológico infantil em um jogo interativo, com IA e estímulos sensoriais para análise não invasiva.',
+    proj8_desc: 'Software integrado ao ambiente do SUS que organiza uma fila de alertas de suspeita, cruzando sintomas e histórico clínico para apontar possíveis doenças raras. Cada alerta traz relevância e compatibilidade, apoiando profissionais de saúde a investigar e encaminhar casos mais rápido — sem substituir o diagnóstico médico.',
+    proj9_desc: 'Aplicativo mobile que traduz o Cadastro Ambiental Rural (CAR) e a legislação de licenciamento em linguagem simples para o produtor rural. Mostra a situação da propriedade, a área de Reserva Legal e dicas práticas para manter a regularização em dia, com apoio de um assistente virtual e integração com WhatsApp.',
+    proj10_desc: 'Plataforma mobile de inteligência climática para agricultores do semiárido, reunindo previsão do tempo e dados da propriedade para apoiar decisões no dia a dia da roça. A proposta é ajudar o produtor a se antecipar a riscos climáticos e planejar o plantio com mais segurança.',
     contact_label: '04 — Contato',
     contact_title: 'Entre em contato',
     contact_intro: 'Tem um projeto em mente? Vamos conversar e transformar sua ideia em realidade.',
@@ -107,6 +123,19 @@ const translations = {
     badge_silver: '🥈 2nd Place',
     badge_2nd:    '🥈 2nd Place',
     badge_ambassador: 'Ambassador',
+    badge_1st_natl: '🥇 National 1st Place',
+    badge_2nd2: '🥈 2nd Place',
+    badge_3rd4: '🥉 3rd Place',
+    badge_recognition: '🏅 Recognition',
+    ev9_highlight: '🏆 27,000+ participants nationwide',
+    ev9_title: 'GrandPrix Nacional',
+    ev9_desc: 'We won 1st place at the GrandPrix Nacional, a competition with more than 27,000 participants from every state in Brazil. One of the biggest achievements of the CtrlSec team so far, the result of months of dedication in ideation, development, and pitching.',
+    ev10_title: 'Ideias Raras — São Paulo',
+    ev10_desc: 'I won 2nd place at the Ideias Raras Hackathon in São Paulo, one of Brazil\'s major innovation hubs, focused on solutions to find rare-disease patients within the public health system (SUS). A podium finish that reinforces our commitment to using technology to speed up rare-disease diagnosis.',
+    ev11_title: 'Hackathon + Mineração',
+    ev11_desc: 'I won 3rd place at the Hackathon + Mineração, promoted by CBPM and MinexHub, developing a solution for challenges in the mining sector. Another competition that shows the team\'s versatility in proposing technology for different sectors of the economy.',
+    ev12_title: 'Aluno Destaque CIMATEC — 2026',
+    ev12_desc: 'I received the Aluno Destaque CIMATEC 2026 recognition, awarded during a SENAI CIMATEC institutional event for active participation in innovation, technology, and entrepreneurship initiatives.',
     ev1_title: 'Harvard HSIL Hackathon',
     ev1_desc:  'I participated in the Harvard HSIL Hackathon in São Paulo, focused on health innovation. We developed CapCure, a solution that transforms neurological monitoring for children into an interactive game, using AI and phone sensory stimuli to analyze the child\'s responses — non-invasively, without a hospital setting.',
     ev2_title: 'NASA Space Apps',
@@ -132,6 +161,9 @@ const translations = {
     proj5_desc: 'An energy management dashboard with predictive AI, Digital Twin technology, and real-time monitoring for industries.',
     proj6_desc: 'A security system with smart glasses, Zero Trust authentication, and AES-256 encryption, with an integrated AI assistant.',
     proj7_desc: 'A solution that transforms neurological monitoring of children into an interactive game, using AI and sensory stimuli for non-invasive analysis.',
+    proj8_desc: 'A tool integrated with Brazil\'s public health system (SUS) that organizes a queue of suspicion alerts, cross-referencing symptoms and clinical history to flag possible rare diseases. Each alert shows a relevance and compatibility score, helping health professionals investigate and route cases faster — without replacing a medical diagnosis.',
+    proj9_desc: 'A mobile app that translates Brazil\'s Rural Environmental Registry (CAR) and licensing rules into plain language for landowners. It shows the property\'s regularization status, Legal Reserve area, and practical tips to stay compliant, supported by a virtual assistant and WhatsApp integration.',
+    proj10_desc: 'A mobile climate-intelligence platform for farmers in Brazil\'s semi-arid region, combining weather forecasts and farm data to support everyday decisions. It aims to help producers anticipate climate risks and plan planting with more confidence.',
     contact_label: '04 — Contact',
     contact_title: 'Get in touch',
     contact_intro: 'Have a project in mind? Let\'s talk and turn your idea into reality.',
@@ -256,8 +288,29 @@ function initReveal() {
   elements.forEach(el => observer.observe(el));
 }
 
+/* ── Reduced motion helper ── */
+const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── Subtle scroll parallax for background grid ── */
+function initParallax() {
+  if (prefersReducedMotion) return;
+  const grid = document.querySelector('.home-bg-grid');
+  if (!grid) return;
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      grid.style.transform = `translateY(${y * 0.08}px)`;
+      ticking = false;
+    });
+  }, { passive: true });
+}
+
 /* ── Custom cursor ── */
 function initCursor() {
+  if (prefersReducedMotion) return;
   const cursor = document.getElementById('cursor');
   const trail  = document.getElementById('cursorTrail');
   if (!cursor || !trail) return;
@@ -318,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReveal();
   initCursor();
   initScrollSpy();
+  initParallax();
   startTyping();
   // Apply initial language
   setLang('pt');
