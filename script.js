@@ -20,10 +20,10 @@ const translations = {
     scroll_down: 'scroll',
     about_label: '01 — Sobre mim',
     about_title: 'Quem sou eu',
-    about_p1: 'Sou desenvolvedor Front-End com experiência em aplicações web modernas, responsivas e escaláveis, utilizando JavaScript, TypeScript, Angular, React, HTML e CSS.',
-    about_p2: 'Sou estudante de Desenvolvimento de Sistemas no SENAI CIMATEC, participando de iniciativas voltadas à tecnologia e empreendedorismo. Também curso Engenharia de Software na UCSAL, aprofundando conhecimentos em boas práticas e arquitetura de sistemas.',
-    about_p3: 'Participo de hackathons e desenvolvo projetos com foco em impacto social e tecnológico, incluindo soluções com inteligência artificial e plataformas digitais.',
-    about_p4: 'Busco evoluir continuamente e usar a tecnologia para criar soluções inovadoras, acessíveis e eficientes.',
+    about_p1: 'Sou desenvolvedor Front-End e crio aplicações web modernas, responsivas e escaláveis com JavaScript, TypeScript, React, Angular, HTML e CSS.',
+    about_p2: 'Estudo Desenvolvimento de Sistemas no SENAI CIMATEC e Engenharia de Software na UCSAL, com foco em tecnologia, inovação e boas práticas.',
+    about_p3: 'Participo de hackathons e desenvolvo projetos de impacto social e tecnológico, incluindo soluções com inteligência artificial.',
+    about_p4: 'Busco evoluir continuamente e criar soluções inovadoras, acessíveis e eficientes.',
     about_skills_title: 'Tecnologias',
     stat_events:   'Eventos',
     stat_projects: 'Projetos',
@@ -106,9 +106,9 @@ const translations = {
     scroll_down: 'scroll',
     about_label: '01 — About me',
     about_title: 'Who I am',
-    about_p1: 'I am a Front-End developer with experience building modern, responsive, and scalable web applications using JavaScript, TypeScript, Angular, React, HTML, and CSS.',
-    about_p2: 'I study Systems Development at SENAI CIMATEC, participating in technology and entrepreneurship initiatives. I also study Software Engineering at UCSAL, deepening knowledge in best practices and system architecture.',
-    about_p3: 'I take part in hackathons and build projects focused on social and technological impact, including AI-driven solutions and digital platforms.',
+    about_p1: 'I am a Front-End developer who builds modern, responsive, and scalable web applications with JavaScript, TypeScript, React, Angular, HTML, and CSS.',
+    about_p2: 'I study Systems Development at SENAI CIMATEC and Software Engineering at UCSAL, focusing on technology, innovation, and good engineering practices.',
+    about_p3: 'I take part in hackathons and build projects with social and technological impact, including AI-driven solutions.',
     about_p4: 'I am constantly evolving and using technology to create innovative, accessible, and efficient solutions.',
     about_skills_title: 'Technologies',
     stat_events:   'Events',
@@ -356,7 +356,8 @@ function initStatCounters() {
     const target = parseInt(el.getAttribute('data-target'), 10) || 0;
     const suf = suffix(el);
     if (prefersReducedMotion) { el.textContent = target + suf; return; }
-    const duration = 1100;
+    // V3.2: slower, more readable count-up animation.
+    const duration = window.matchMedia('(max-width: 700px)').matches ? 1900 : 2200;
     const start = performance.now();
     function step(now) {
       const p = Math.min(1, (now - start) / duration);
@@ -537,12 +538,17 @@ function initBootScreen() {
   if (prefersReducedMotion) { boot.remove(); return; }
 
   document.body.classList.add('boot-lock');
-  const logEl    = document.getElementById('bootLog');
+  const logEl = document.getElementById('bootLog');
   const statusText = document.getElementById('bootStatusText');
-  const pctEl    = document.getElementById('bootPct');
-  const barFill  = document.getElementById('bootBarFill');
+  const pctEl = document.getElementById('bootPct');
+  const barFill = document.getElementById('bootBarFill');
   const isMobile = window.matchMedia('(max-width: 700px)').matches;
-  const fillTime = isMobile ? 650 : 1100;
+
+  // V3.2: deliberately slower so the opening can actually be read.
+  const lineDelay = isMobile ? 220 : 260;
+  const fillTime = isMobile ? 1450 : 1900;
+  const readyPause = isMobile ? 500 : 700;
+  const revealTime = isMobile ? 900 : 1050;
   const lines = isMobile
     ? ['booting kernel...', 'compiling interface...']
     : ['booting kernel...', 'loading assets...', 'linking modules...', 'compiling interface...'];
@@ -550,29 +556,31 @@ function initBootScreen() {
   const hardTimeout = setTimeout(() => {
     document.body.classList.remove('boot-lock');
     if (boot && boot.parentNode) boot.remove();
-  }, 4500);
+  }, 7200);
 
   try {
-    lines.forEach((l, i) => {
+    lines.forEach((line, i) => {
       setTimeout(() => {
         if (!logEl) return;
         const d = document.createElement('div');
-        d.innerHTML = `<span>&gt;</span> ${l}`;
+        d.innerHTML = `<span>&gt;</span> ${line}`;
         logEl.appendChild(d);
-      }, i * (isMobile ? 140 : 190));
+      }, i * lineDelay);
     });
 
-    const lineTime = lines.length * (isMobile ? 140 : 190) + 100;
+    const lineTime = lines.length * lineDelay + 180;
 
     setTimeout(() => {
       requestAnimationFrame(() => {
-        barFill.style.transition = `width ${fillTime}ms ease`;
+        barFill.style.transition = `width ${fillTime}ms cubic-bezier(.4,0,.2,1)`;
         barFill.style.width = '100%';
       });
+
       const start = performance.now();
       (function tick(now) {
         const p = Math.min(1, (now - start) / fillTime);
-        if (pctEl) pctEl.textContent = Math.round(p * 100) + '%';
+        const eased = 1 - Math.pow(1 - p, 2.2);
+        if (pctEl) pctEl.textContent = Math.round(eased * 100) + '%';
         if (p < 1) requestAnimationFrame(tick);
       })(start);
     }, lineTime);
@@ -580,15 +588,17 @@ function initBootScreen() {
     setTimeout(() => {
       if (statusText) statusText.textContent = 'SYSTEM READY';
       if (pctEl) pctEl.textContent = '100%';
+
+      // Give SYSTEM READY a readable pause before the cinematic reveal.
       setTimeout(() => {
         boot.classList.add('boot-open');
         document.body.classList.remove('boot-lock');
         setTimeout(() => {
           clearTimeout(hardTimeout);
           if (boot.parentNode) boot.remove();
-        }, 750);
-      }, isMobile ? 220 : 380);
-    }, lineTime + fillTime + 150);
+        }, revealTime + 150);
+      }, readyPause);
+    }, lineTime + fillTime);
   } catch (e) {
     document.body.classList.remove('boot-lock');
     if (boot.parentNode) boot.remove();
